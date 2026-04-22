@@ -17,6 +17,7 @@ while True:
     print("5. Exit")
 
     choice = input("Choose an option: ")
+    os.system("cls")
 
     if choice in menu:
         menu[choice](phonebook)

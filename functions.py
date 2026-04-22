@@ -44,6 +44,7 @@ def add_contact(phonebook):
             number = int(number_input)
             break
         except ValueError:
+            os.system("cls")
             print("Please enter a valid number.")
     
     contact = {"name": name, "number": number}
@@ -56,23 +57,45 @@ def show_contacts(phonebook):
         print("Phonebook is empty.")
     else: 
         for contact in phonebook:
+            
             print(f"Name: {contact['name']}, Number: {contact['number']}")
-            input("Press Anything to Continue")
+            
+            
             
 def search_contact(phonebook):
     search = input("Search for name: ")
 
     found = False
+    os.system("cls")
     for contact in phonebook:
-        if contact["name"].lower() == search.lower():
+       if search.lower() in contact ["name"].lower():
             print(f"Found: {contact['name']} - {contact['number']}")
             found = True
             
+            
     if not found:
-        os.system("cls")
         print("No contact found.")
         
 def sort_contacts(phonebook):
-    phonebook.sort(key=lambda contact: contact["name"].lower())
+    print("How do you want it sorted?")
+    print("1. Name (A-Z)")
+    print("2. Name(Z-A)")
+    print("3. Phone number")
+    
+    try:
+        choice_sort = int(input("Choose an option"))
+    except ValueError:
+        print("Invalid Error")
+        return 
+    if choice_sort == 1:
+        phonebook.sort(key=lambda contact: contact["name"].lower())
+    elif choice_sort == 2:
+        phonebook.sort(key=lambda contact: contact["name"].lower(), reverse=True)
+    elif choice_sort == 3:
+        phonebook.sort(key=lambda contact: contact["number"])       
+        
+    else: 
+        print("No")
+        return
     save_contacts(phonebook)
     print("Contacts sorted by name.")
