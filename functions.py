@@ -12,8 +12,13 @@ def load_contacts():
             for row in reader:
                 name = row.get("name") or row.get(" name")
                 number = row.get("number") or row.get(" number")
+                category = row.get("category") or row.get(" category") or "General"
                 if name and number:
-                    phonebook.append({"name": name.strip(), "number": number.strip()})
+                    phonebook.append({
+                        "name": name.strip(), 
+                        "number": number.strip(),
+                        "category": category.strip()
+                    })
     except FileNotFoundError:
         pass
     return phonebook
@@ -23,7 +28,7 @@ def save_contacts(phonebook):
     # Sparar kontakter till CSV-fil
     try:
         with open(FILENAME, mode="w", newline="", encoding="utf-8") as file:
-            writer = csv.DictWriter(file, fieldnames=["name", "number"])
+            writer = csv.DictWriter(file, fieldnames=["name", "number", "category"])
             writer.writeheader()
             writer.writerows(phonebook)
     except Exception as e:
@@ -50,10 +55,15 @@ def add_contact(phonebook):
             os.system("cls")
             print("Please enter a valid number.")
     
-    contact = {"name": name, "number": number}
+    category = input("Enter category (or press Enter for 'General'): ").strip()
+    if not category:
+        category = "General"
+    
+    contact = {"name": name, "number": number, "category": category}
     phonebook.append(contact)
     save_contacts(phonebook)
     print("Contact added!")
+
     
 def show_contacts(phonebook):
     # Visar alla kontakter i listan
@@ -170,3 +180,89 @@ def update_contact(phonebook):
     # 4. Spara ändringarna till filen
     save_contacts(phonebook)
     print("Kontakten har uppdaterats!")
+
+
+def get_all_categories(phonebook):
+    # Returnerar en lista med alla unika kategorier
+    categories = set()
+    for contact in phonebook:
+        category = contact.get("category", "General")
+        categories.add(category)
+    return sorted(list(categories))
+
+
+def show_categories(phonebook):
+    # Visar alla kategorier och antal kontakter i varje
+    if len(phonebook) == 0:
+        print("Phonebook is empty.")
+        return
+    
+    categories = get_all_categories(phonebook)
+    print("\nCategories:")
+    for category in categories:
+        count = sum(1 for c in phonebook if c.get("category", "General") == category)
+        print(f"  {category}: {count} contacts")
+
+
+def show_contacts_by_category(phonebook):
+    # Visar alla kontakter i en viss kategori
+    if len(phonebook) == 0:
+        print("Phonebook is empty.")
+        return
+    
+    categories = get_all_categories(phonebook)
+    print("\nAvailable categories:")
+    for i, category in enumerate(categories, 1):
+        print(f"{i}. {category}")
+    
+    try:
+        choice = int(input("Select category: "))
+        if 1 <= choice <= len(categories):
+            selected_category = categories[choice - 1]
+            os.system("cls")
+            print(f"\nContacts in '{selected_category}':")
+            found = False
+            for contact in phonebook:
+                if contact.get("category", "General") == selected_category:
+                    print(f"  {contact['name']} - {contact['number']}")
+                    found = True
+            if not found:
+                print("No contacts in this category.")
+        else:
+            print("Invalid choice.")
+    except ValueError:
+        print("Invalid input.")
+
+
+def change_contact_category(phonebook):
+    # Ändrar kategori för en befintlig kontakt
+    search = input("Search for name: ").strip()
+    found_contacts = []
+    
+    for contact in phonebook:
+        if search.lower() in contact["name"].lower():
+            found_contacts.append(contact)
+    
+    if not found_contacts:
+        print("No contact found.")
+        return
+    
+    print("\nFound contacts:")
+    for i, contact in enumerate(found_contacts, 1):
+        print(f"{i}. {contact['name']} ({contact.get('category', 'General')})")
+    
+    try:
+        choice = int(input("Select contact: "))
+        if 1 <= choice <= len(found_contacts):
+            target = found_contacts[choice - 1]
+            new_category = input("Enter new category: ").strip()
+            if new_category:
+                target['category'] = new_category
+                save_contacts(phonebook)
+                print(f"Category updated to '{new_category}'!")
+            else:
+                print("Category cannot be empty.")
+        else:
+            print("Invalid choice.")
+    except ValueError:
+        print("Invalid input.")

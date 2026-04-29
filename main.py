@@ -10,6 +10,9 @@ menu = {
     "4": sort_contacts,
     "5": delete_contact,
     "6": update_contact,
+    "7": show_categories,
+    "8": show_contacts_by_category,
+    "9": change_contact_category,
 }
 
 while True:
@@ -23,7 +26,7 @@ while True:
     for key in menu:
         
         print(f"{key}. {menu[key].__name__.replace('_', ' ').title()}")
-    print("7. Exit")
+    print("10. Exit")
 
     choice = input("Choose an option: ")
     os.system("cls")
@@ -31,7 +34,7 @@ while True:
     if choice in menu:
         menu[choice](phonebook)
 
-    elif choice == "7":
+    elif choice == "10":
         save_contacts(phonebook)
         print("Program exiting.")
         break
