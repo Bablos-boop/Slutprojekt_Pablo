@@ -8,7 +8,7 @@ class PhonebookGUI:
         self.root = root
         self.root.title("Phonebook Manager")
         self.root.geometry("900x650")
-        self.root.configure(bg="#f0f0f0")
+        self.root.configure(bg="#f5f5f5")
         
         # Load contacts
         self.phonebook = load_contacts()
@@ -18,8 +18,26 @@ class PhonebookGUI:
         # Configure style
         style = ttk.Style()
         style.theme_use('clam')
-        style.configure('Header.TLabel', font=('Helvetica', 16, 'bold'), background="#f0f0f0")
-        style.configure('TButton', font=('Helvetica', 10))
+        style.configure('Header.TLabel', font=('Helvetica', 18, 'bold'), background="#f5f5f5", foreground="#1f1f1f")
+        style.configure('TButton', font=('Helvetica', 10), padding=6)
+        style.configure('TLabel', background="#f5f5f5")
+        style.configure('TFrame', background="#f5f5f5")
+        style.map('TButton', 
+                  relief=[('pressed', tk.SUNKEN), ('!pressed', tk.RAISED)])
+        
+        # Define button style colors
+        self.colors = {
+            'primary': '#0078D4',      # Microsoft blue
+            'primary_hover': '#005A9E',
+            'danger': '#E74C3C',
+            'danger_hover': '#C0392B',
+            'success': '#27AE60',
+            'success_hover': '#1E8449',
+            'secondary': '#7F8C8D',
+            'secondary_hover': '#5A6C7D',
+            'bg': '#f5f5f5',
+            'text': '#1f1f1f'
+        }
         
         self.create_widgets()
         self.refresh_display()
@@ -27,50 +45,89 @@ class PhonebookGUI:
     def create_widgets(self):
         # Main container
         main_frame = ttk.Frame(self.root)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
         
         # Header
         header = ttk.Label(main_frame, text="📞 PHONEBOOK MANAGER", style='Header.TLabel')
-        header.pack(pady=(0, 20))
+        header.pack(pady=(0, 25))
         
         # Top control panel
         control_frame = ttk.Frame(main_frame)
-        control_frame.pack(fill=tk.X, padx=0, pady=(0, 15))
+        control_frame.pack(fill=tk.X, padx=0, pady=(0, 20))
         
         # Category filter
         cat_frame = ttk.Frame(control_frame)
-        cat_frame.pack(side=tk.LEFT, padx=(0, 20))
+        cat_frame.pack(side=tk.LEFT, padx=(0, 30))
         
-        ttk.Label(cat_frame, text="Category:").pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Label(cat_frame, text="Category:", font=('Helvetica', 10)).pack(side=tk.LEFT, padx=(0, 8))
         
         self.category_var = tk.StringVar(value="All")
         self.category_combo = ttk.Combobox(cat_frame, textvariable=self.category_var, 
-                                           width=15, state='readonly')
+                                           width=15, state='readonly', font=('Helvetica', 10))
         self.category_combo.pack(side=tk.LEFT)
         self.category_combo.bind('<<ComboboxSelected>>', lambda e: self.filter_by_category())
         
         # Search frame
         search_frame = ttk.Frame(control_frame)
-        search_frame.pack(side=tk.LEFT, padx=(0, 20))
+        search_frame.pack(side=tk.LEFT, padx=(0, 0))
         
-        ttk.Label(search_frame, text="Search:").pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Label(search_frame, text="Search:", font=('Helvetica', 10)).pack(side=tk.LEFT, padx=(0, 8))
         
         self.search_var = tk.StringVar()
-        search_entry = ttk.Entry(search_frame, textvariable=self.search_var, width=20)
-        search_entry.pack(side=tk.LEFT, padx=(0, 5))
+        search_entry = ttk.Entry(search_frame, textvariable=self.search_var, width=22, font=('Helvetica', 10))
+        search_entry.pack(side=tk.LEFT, padx=(0, 8))
         search_entry.bind('<KeyRelease>', lambda e: self.refresh_display())
         
-        ttk.Button(search_frame, text="Clear", command=self.clear_search).pack(side=tk.LEFT)
+        self.clear_btn = tk.Button(search_frame, text="Clear", command=self.clear_search,
+                                    font=('Helvetica', 9), bg=self.colors['secondary'], 
+                                    fg='white', padx=12, pady=5, relief=tk.FLAT, cursor="hand2")
+        self.clear_btn.pack(side=tk.LEFT)
+        self.clear_btn.bind('<Enter>', lambda e: self.clear_btn.config(bg=self.colors['secondary_hover']))
+        self.clear_btn.bind('<Leave>', lambda e: self.clear_btn.config(bg=self.colors['secondary']))
         
         # Action buttons
         button_frame = ttk.Frame(main_frame)
-        button_frame.pack(fill=tk.X, padx=0, pady=(0, 15))
+        button_frame.pack(fill=tk.X, padx=0, pady=(0, 20))
         
-        ttk.Button(button_frame, text="➕ Add Contact", command=self.add_contact_window).pack(side=tk.LEFT, padx=3)
-        ttk.Button(button_frame, text="✎ Edit", command=self.edit_contact).pack(side=tk.LEFT, padx=3)
-        ttk.Button(button_frame, text="🗑️ Delete", command=self.delete_contact).pack(side=tk.LEFT, padx=3)
-        ttk.Button(button_frame, text="📁 Manage Categories", command=self.manage_categories).pack(side=tk.LEFT, padx=3)
-        ttk.Button(button_frame, text="⬆️ Sort", command=self.sort_window).pack(side=tk.LEFT, padx=3)
+        # Add Contact (Primary CTA - Blue)
+        self.add_btn = tk.Button(button_frame, text="➕ Add Contact", command=self.add_contact_window,
+                                 font=('Helvetica', 10, 'bold'), bg=self.colors['primary'], 
+                                 fg='white', padx=14, pady=7, relief=tk.FLAT, cursor="hand2")
+        self.add_btn.pack(side=tk.LEFT, padx=3)
+        self.add_btn.bind('<Enter>', lambda e: self.add_btn.config(bg=self.colors['primary_hover']))
+        self.add_btn.bind('<Leave>', lambda e: self.add_btn.config(bg=self.colors['primary']))
+        
+        # Edit
+        self.edit_btn = tk.Button(button_frame, text="✎ Edit", command=self.edit_contact,
+                                  font=('Helvetica', 10), bg='#5DADE2', 
+                                  fg='white', padx=14, pady=7, relief=tk.FLAT, cursor="hand2")
+        self.edit_btn.pack(side=tk.LEFT, padx=3)
+        self.edit_btn.bind('<Enter>', lambda e: self.edit_btn.config(bg='#3498DB'))
+        self.edit_btn.bind('<Leave>', lambda e: self.edit_btn.config(bg='#5DADE2'))
+        
+        # Delete
+        self.delete_btn = tk.Button(button_frame, text="🗑️ Delete", command=self.delete_contact,
+                                    font=('Helvetica', 10), bg=self.colors['danger'], 
+                                    fg='white', padx=14, pady=7, relief=tk.FLAT, cursor="hand2")
+        self.delete_btn.pack(side=tk.LEFT, padx=3)
+        self.delete_btn.bind('<Enter>', lambda e: self.delete_btn.config(bg=self.colors['danger_hover']))
+        self.delete_btn.bind('<Leave>', lambda e: self.delete_btn.config(bg=self.colors['danger']))
+        
+        # Manage Categories
+        self.cat_btn = tk.Button(button_frame, text="📁 Categories", command=self.manage_categories,
+                                 font=('Helvetica', 10), bg=self.colors['secondary'], 
+                                 fg='white', padx=14, pady=7, relief=tk.FLAT, cursor="hand2")
+        self.cat_btn.pack(side=tk.LEFT, padx=3)
+        self.cat_btn.bind('<Enter>', lambda e: self.cat_btn.config(bg=self.colors['secondary_hover']))
+        self.cat_btn.bind('<Leave>', lambda e: self.cat_btn.config(bg=self.colors['secondary']))
+        
+        # Sort
+        self.sort_btn = tk.Button(button_frame, text="⬆️ Sort", command=self.sort_window,
+                                  font=('Helvetica', 10), bg=self.colors['secondary'], 
+                                  fg='white', padx=14, pady=7, relief=tk.FLAT, cursor="hand2")
+        self.sort_btn.pack(side=tk.LEFT, padx=3)
+        self.sort_btn.bind('<Enter>', lambda e: self.sort_btn.config(bg=self.colors['secondary_hover']))
+        self.sort_btn.bind('<Leave>', lambda e: self.sort_btn.config(bg=self.colors['secondary']))
         
         # Contacts list frame
         list_frame = ttk.Frame(main_frame)
@@ -89,6 +146,11 @@ class PhonebookGUI:
         self.tree.heading('Number', text='Phone Number')
         self.tree.heading('Category', text='Category')
         
+        # Configure row styling
+        style = ttk.Style()
+        style.configure('Treeview', rowheight=28, font=('Helvetica', 10))
+        style.configure('Treeview.Heading', font=('Helvetica', 11, 'bold'), padding=10)
+        
         # Scrollbar
         scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscroll=scrollbar.set)
@@ -98,9 +160,9 @@ class PhonebookGUI:
         
         # Status bar
         status_frame = ttk.Frame(main_frame)
-        status_frame.pack(fill=tk.X, padx=0, pady=(0, 0))
+        status_frame.pack(fill=tk.X, padx=0, pady=(5, 0))
         
-        self.status_label = ttk.Label(status_frame, text="", relief=tk.SUNKEN)
+        self.status_label = ttk.Label(status_frame, text="", relief=tk.SUNKEN, font=('Helvetica', 9))
         self.status_label.pack(fill=tk.X, side=tk.LEFT)
     
     def refresh_display(self):
@@ -147,29 +209,34 @@ class PhonebookGUI:
     def add_contact_window(self):
         window = tk.Toplevel(self.root)
         window.title("Add Contact")
-        window.geometry("400x250")
+        window.geometry("400x280")
         window.transient(self.root)
         window.grab_set()
+        window.configure(bg=self.colors['bg'])
+        
+        # Main frame with padding
+        main_frame = ttk.Frame(window)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         # Name
-        ttk.Label(window, text="Name:").grid(row=0, column=0, sticky=tk.W, padx=10, pady=10)
+        ttk.Label(main_frame, text="Name:", font=('Helvetica', 10)).grid(row=0, column=0, sticky=tk.W, pady=12)
         name_var = tk.StringVar()
-        name_entry = ttk.Entry(window, textvariable=name_var, width=30)
-        name_entry.grid(row=0, column=1, padx=10, pady=10)
+        name_entry = ttk.Entry(main_frame, textvariable=name_var, width=30, font=('Helvetica', 10))
+        name_entry.grid(row=0, column=1, padx=10, pady=12)
         name_entry.focus()
         
         # Number
-        ttk.Label(window, text="Phone Number:").grid(row=1, column=0, sticky=tk.W, padx=10, pady=10)
+        ttk.Label(main_frame, text="Phone Number:", font=('Helvetica', 10)).grid(row=1, column=0, sticky=tk.W, pady=12)
         number_var = tk.StringVar()
-        number_entry = ttk.Entry(window, textvariable=number_var, width=30)
-        number_entry.grid(row=1, column=1, padx=10, pady=10)
+        number_entry = ttk.Entry(main_frame, textvariable=number_var, width=30, font=('Helvetica', 10))
+        number_entry.grid(row=1, column=1, padx=10, pady=12)
         
         # Category
-        ttk.Label(window, text="Category:").grid(row=2, column=0, sticky=tk.W, padx=10, pady=10)
+        ttk.Label(main_frame, text="Category:", font=('Helvetica', 10)).grid(row=2, column=0, sticky=tk.W, pady=12)
         category_var = tk.StringVar(value="General")
-        category_combo = ttk.Combobox(window, textvariable=category_var, width=27)
+        category_combo = ttk.Combobox(main_frame, textvariable=category_var, width=27, font=('Helvetica', 10))
         category_combo['values'] = get_all_categories(self.phonebook) + ["New Category..."]
-        category_combo.grid(row=2, column=1, padx=10, pady=10)
+        category_combo.grid(row=2, column=1, padx=10, pady=12)
         
         def save_contact():
             name = name_var.get().strip()
@@ -203,7 +270,23 @@ class PhonebookGUI:
             self.refresh_display()
             window.destroy()
         
-        ttk.Button(window, text="Save", command=save_contact).grid(row=3, column=0, columnspan=2, pady=20)
+        # Button frame
+        button_frame = ttk.Frame(main_frame)
+        button_frame.grid(row=3, column=0, columnspan=2, pady=25)
+        
+        save_btn = tk.Button(button_frame, text="💾 Save", command=save_contact,
+                            font=('Helvetica', 11, 'bold'), bg=self.colors['primary'], 
+                            fg='white', padx=20, pady=8, relief=tk.FLAT, cursor="hand2")
+        save_btn.pack(side=tk.LEFT, padx=5)
+        save_btn.bind('<Enter>', lambda e: save_btn.config(bg=self.colors['primary_hover']))
+        save_btn.bind('<Leave>', lambda e: save_btn.config(bg=self.colors['primary']))
+        
+        cancel_btn = tk.Button(button_frame, text="Cancel", command=window.destroy,
+                              font=('Helvetica', 11), bg=self.colors['secondary'], 
+                              fg='white', padx=20, pady=8, relief=tk.FLAT, cursor="hand2")
+        cancel_btn.pack(side=tk.LEFT, padx=5)
+        cancel_btn.bind('<Enter>', lambda e: cancel_btn.config(bg=self.colors['secondary_hover']))
+        cancel_btn.bind('<Leave>', lambda e: cancel_btn.config(bg=self.colors['secondary']))
     
     def edit_contact(self):
         selection = self.tree.selection()
@@ -223,28 +306,33 @@ class PhonebookGUI:
         
         window = tk.Toplevel(self.root)
         window.title("Edit Contact")
-        window.geometry("400x250")
+        window.geometry("400x280")
         window.transient(self.root)
         window.grab_set()
+        window.configure(bg=self.colors['bg'])
+        
+        # Main frame with padding
+        main_frame = ttk.Frame(window)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         # Name
-        ttk.Label(window, text="Name:").grid(row=0, column=0, sticky=tk.W, padx=10, pady=10)
+        ttk.Label(main_frame, text="Name:", font=('Helvetica', 10)).grid(row=0, column=0, sticky=tk.W, pady=12)
         name_var = tk.StringVar(value=contact['name'])
-        name_entry = ttk.Entry(window, textvariable=name_var, width=30)
-        name_entry.grid(row=0, column=1, padx=10, pady=10)
+        name_entry = ttk.Entry(main_frame, textvariable=name_var, width=30, font=('Helvetica', 10))
+        name_entry.grid(row=0, column=1, padx=10, pady=12)
         
         # Number
-        ttk.Label(window, text="Phone Number:").grid(row=1, column=0, sticky=tk.W, padx=10, pady=10)
+        ttk.Label(main_frame, text="Phone Number:", font=('Helvetica', 10)).grid(row=1, column=0, sticky=tk.W, pady=12)
         number_var = tk.StringVar(value=str(contact['number']))
-        number_entry = ttk.Entry(window, textvariable=number_var, width=30)
-        number_entry.grid(row=1, column=1, padx=10, pady=10)
+        number_entry = ttk.Entry(main_frame, textvariable=number_var, width=30, font=('Helvetica', 10))
+        number_entry.grid(row=1, column=1, padx=10, pady=12)
         
         # Category
-        ttk.Label(window, text="Category:").grid(row=2, column=0, sticky=tk.W, padx=10, pady=10)
+        ttk.Label(main_frame, text="Category:", font=('Helvetica', 10)).grid(row=2, column=0, sticky=tk.W, pady=12)
         category_var = tk.StringVar(value=contact.get('category', 'General'))
-        category_combo = ttk.Combobox(window, textvariable=category_var, width=27)
+        category_combo = ttk.Combobox(main_frame, textvariable=category_var, width=27, font=('Helvetica', 10))
         category_combo['values'] = get_all_categories(self.phonebook)
-        category_combo.grid(row=2, column=1, padx=10, pady=10)
+        category_combo.grid(row=2, column=1, padx=10, pady=12)
         
         def save_changes():
             name = name_var.get().strip()
@@ -267,7 +355,23 @@ class PhonebookGUI:
             self.refresh_display()
             window.destroy()
         
-        ttk.Button(window, text="Save", command=save_changes).grid(row=3, column=0, columnspan=2, pady=20)
+        # Button frame
+        button_frame = ttk.Frame(main_frame)
+        button_frame.grid(row=3, column=0, columnspan=2, pady=25)
+        
+        save_btn = tk.Button(button_frame, text="💾 Save", command=save_changes,
+                            font=('Helvetica', 11, 'bold'), bg=self.colors['primary'], 
+                            fg='white', padx=20, pady=8, relief=tk.FLAT, cursor="hand2")
+        save_btn.pack(side=tk.LEFT, padx=5)
+        save_btn.bind('<Enter>', lambda e: save_btn.config(bg=self.colors['primary_hover']))
+        save_btn.bind('<Leave>', lambda e: save_btn.config(bg=self.colors['primary']))
+        
+        cancel_btn = tk.Button(button_frame, text="Cancel", command=window.destroy,
+                              font=('Helvetica', 11), bg=self.colors['secondary'], 
+                              fg='white', padx=20, pady=8, relief=tk.FLAT, cursor="hand2")
+        cancel_btn.pack(side=tk.LEFT, padx=5)
+        cancel_btn.bind('<Enter>', lambda e: cancel_btn.config(bg=self.colors['secondary_hover']))
+        cancel_btn.bind('<Leave>', lambda e: cancel_btn.config(bg=self.colors['secondary']))
     
     def delete_contact(self):
         selection = self.tree.selection()
@@ -294,18 +398,20 @@ class PhonebookGUI:
     def manage_categories(self):
         window = tk.Toplevel(self.root)
         window.title("Manage Categories")
-        window.geometry("450x400")
+        window.geometry("450x450")
         window.transient(self.root)
         window.grab_set()
+        window.configure(bg=self.colors['bg'])
         
         # Header
-        ttk.Label(window, text="Categories:", font=('Helvetica', 12, 'bold')).pack(padx=10, pady=10)
+        header = ttk.Label(window, text="Categories:", font=('Helvetica', 12, 'bold'))
+        header.pack(padx=15, pady=15)
         
         # Create frame with scrollbar for categories
         list_frame = ttk.Frame(window)
-        list_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        list_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=5)
         
-        canvas = tk.Canvas(list_frame, bg="white", highlightthickness=0)
+        canvas = tk.Canvas(list_frame, bg="white", highlightthickness=1, highlightbackground="#ddd")
         scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL, command=canvas.yview)
         scrollable_frame = ttk.Frame(canvas)
         
@@ -321,26 +427,25 @@ class PhonebookGUI:
         for cat in categories:
             count = sum(1 for c in self.phonebook if c.get('category', 'General') == cat)
             cat_frame = ttk.Frame(scrollable_frame)
-            cat_frame.pack(fill=tk.X, pady=5, padx=5)
+            cat_frame.pack(fill=tk.X, pady=8, padx=8)
             
-            label = ttk.Label(cat_frame, text=f"  {cat}: {count} contacts")
+            label = ttk.Label(cat_frame, text=f"  {cat}: {count} contact{'s' if count != 1 else ''}", 
+                            font=('Helvetica', 10))
             label.pack(side=tk.LEFT, anchor=tk.W)
         
         canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
         # Add new category section
-        add_frame = ttk.Frame(window)
-        add_frame.pack(fill=tk.X, padx=10, pady=10, side=tk.BOTTOM)
-        
-        ttk.Label(add_frame, text="Add New Category:", font=('Helvetica', 10, 'bold')).pack(anchor=tk.W, pady=(0, 5))
+        add_frame = ttk.LabelFrame(window, text="Add New Category", padding=15)
+        add_frame.pack(fill=tk.X, padx=15, pady=15, side=tk.BOTTOM)
         
         input_frame = ttk.Frame(add_frame)
         input_frame.pack(fill=tk.X)
         
         new_cat_var = tk.StringVar()
-        new_cat_entry = ttk.Entry(input_frame, textvariable=new_cat_var, width=30)
-        new_cat_entry.pack(side=tk.LEFT, padx=(0, 5))
+        new_cat_entry = ttk.Entry(input_frame, textvariable=new_cat_var, width=28, font=('Helvetica', 10))
+        new_cat_entry.pack(side=tk.LEFT, padx=(0, 8))
         new_cat_entry.focus()
         
         def add_new_category():
@@ -354,21 +459,30 @@ class PhonebookGUI:
                 messagebox.showerror("Error", f"Category '{new_cat}' already exists")
                 return
             
-            # Create a contact with the new category to save it
             messagebox.showinfo("Success", f"Category '{new_cat}' created! It will be available when adding contacts.")
             self.category_combo['values'] = ["All"] + get_all_categories(self.phonebook) + [new_cat]
             new_cat_entry.delete(0, tk.END)
         
-        ttk.Button(input_frame, text="Add", command=add_new_category).pack(side=tk.LEFT)
+        add_btn = tk.Button(input_frame, text="Add", command=add_new_category,
+                           font=('Helvetica', 10, 'bold'), bg=self.colors['primary'], 
+                           fg='white', padx=15, pady=6, relief=tk.FLAT, cursor="hand2")
+        add_btn.pack(side=tk.LEFT)
+        add_btn.bind('<Enter>', lambda e: add_btn.config(bg=self.colors['primary_hover']))
+        add_btn.bind('<Leave>', lambda e: add_btn.config(bg=self.colors['primary']))
     
     def sort_window(self):
         window = tk.Toplevel(self.root)
         window.title("Sort Contacts")
-        window.geometry("300x200")
+        window.geometry("300x250")
         window.transient(self.root)
         window.grab_set()
+        window.configure(bg=self.colors['bg'])
         
-        ttk.Label(window, text="Sort by:", font=('Helvetica', 12, 'bold')).pack(pady=10)
+        # Main frame with padding
+        main_frame = ttk.Frame(window)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        ttk.Label(main_frame, text="Sort by:", font=('Helvetica', 12, 'bold')).pack(pady=15)
         
         def sort_by(key, reverse=False):
             self.phonebook.sort(key=lambda c: c[key].lower() if isinstance(c[key], str) else c[key], reverse=reverse)
@@ -377,14 +491,22 @@ class PhonebookGUI:
             window.destroy()
             messagebox.showinfo("Success", "Contacts sorted!")
         
-        ttk.Button(window, text="Name (A-Z)", 
-                  command=lambda: sort_by('name', False)).pack(fill=tk.X, padx=10, pady=5)
-        ttk.Button(window, text="Name (Z-A)", 
-                  command=lambda: sort_by('name', True)).pack(fill=tk.X, padx=10, pady=5)
-        ttk.Button(window, text="Phone Number", 
-                  command=lambda: sort_by('number', False)).pack(fill=tk.X, padx=10, pady=5)
-        ttk.Button(window, text="Category", 
-                  command=lambda: sort_by('category', False)).pack(fill=tk.X, padx=10, pady=5)
+        buttons_frame = ttk.Frame(main_frame)
+        buttons_frame.pack(fill=tk.BOTH, expand=True)
+        
+        button_configs = [
+            ("⬆️ Name (A-Z)", lambda: sort_by('name', False)),
+            ("⬇️ Name (Z-A)", lambda: sort_by('name', True)),
+            (" Category", lambda: sort_by('category', False))
+        ]
+        
+        for text, command in button_configs:
+            btn = tk.Button(buttons_frame, text=text, command=command,
+                           font=('Helvetica', 10), bg=self.colors['secondary'], 
+                           fg='white', padx=12, pady=10, relief=tk.FLAT, cursor="hand2")
+            btn.pack(fill=tk.X, pady=5)
+            btn.bind('<Enter>', lambda e, b=btn: b.config(bg=self.colors['secondary_hover']))
+            btn.bind('<Leave>', lambda e, b=btn: b.config(bg=self.colors['secondary']))
 
 def main():
     root = tk.Tk()

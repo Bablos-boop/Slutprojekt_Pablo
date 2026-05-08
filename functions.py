@@ -136,7 +136,7 @@ def update_contact(phonebook):
     search = input("Vem vill du ändra? (Ange namn): ").strip()
     found_contacts = []
 
-    # 1. Hitta alla matchningar (likt din sökfunktion)
+    # 1. Hitta alla matchningar 
     for contact in phonebook:
         if search.lower() in contact["name"].lower():
             found_contacts.append(contact)
