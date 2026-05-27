@@ -41,7 +41,23 @@ class PhonebookGUI:
         
         self.create_widgets()
         self.refresh_display()
+    def sort_treeview_column(self, dict_key, reverse):
+        # Sortera hela telefonboken. Gör alla strängar till små bokstäver för rättvis sortering,
+        # och hantera siffror korrekt.
+        self.phonebook.sort(
+            key=lambda c: c.get(dict_key, '').lower() if isinstance(c.get(dict_key, ''), str) else c.get(dict_key, 0), 
+            reverse=reverse
+        )
         
+        # Spara den sorterade listan i din csv-fil
+        save_contacts(self.phonebook)
+        
+        # Uppdatera rubriken så att nästa klick sorterar åt motsatt håll
+        tree_col = 'Name' if dict_key == 'name' else 'Number' if dict_key == 'number' else 'Category'
+        self.tree.heading(tree_col, command=lambda: self.sort_treeview_column(dict_key, not reverse))
+        
+        # Uppdatera GUI så att den nya ordningen visas
+        self.refresh_display()
     def create_widgets(self):
         # Main container
         main_frame = ttk.Frame(self.root)
@@ -142,9 +158,9 @@ class PhonebookGUI:
         self.tree.column('Number', width=200, anchor=tk.CENTER)
         self.tree.column('Category', width=150, anchor=tk.CENTER)
         
-        self.tree.heading('Name', text='Name')
-        self.tree.heading('Number', text='Phone Number')
-        self.tree.heading('Category', text='Category')
+        self.tree.heading('Name', text='Name', command=lambda: self.sort_treeview_column('name', False))
+        self.tree.heading('Number', text='Phone Number', command=lambda: self.sort_treeview_column('number', False))
+        self.tree.heading('Category', text='Category', command=lambda: self.sort_treeview_column('category', False))
         
         # Configure row styling
         style = ttk.Style()
