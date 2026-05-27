@@ -96,7 +96,7 @@ def sort_contacts(phonebook):
     print("How do you want it sorted?")
     print("1. Name (A-Z)")
     print("2. Name(Z-A)")
-    print("3. Phone number")
+    
     
     try:
         choice_sort = int(input("Choose an option"))
